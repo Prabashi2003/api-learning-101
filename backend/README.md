@@ -1,24 +1,40 @@
 # Backend API
 
-This is the backend API for API Learning 101. It's a simple RESTful API built with Node.js and Express that performs CRUD operations using a JSON file for data storage (no database required!).
+This is the backend API for API Learning 101. It's a simple RESTful API built with Node.js and Express that performs CRUD operations using in-memory storage (no database required!).
 
 ## Features
 
 - ✅ RESTful API design
 - ✅ CRUD operations (Create, Read, Update, Delete)
-- ✅ JSON file-based storage
+- ✅ **In-memory storage** (perfect for learning!)
+- ✅ Serverless-compatible (Vercel deployment ready)
 - ✅ Input validation
 - ✅ Error handling
 - ✅ CORS enabled
 - ✅ Proper HTTP status codes
-- ✅ Ready for Vercel deployment
+- ✅ No database setup needed
 
 ## Tech Stack
 
 - **Runtime**: Node.js (v18+)
 - **Framework**: Express.js
-- **Storage**: JSON file (no database!)
+- **Storage**: In-memory (loads from JSON file initially)
 - **Middleware**: CORS
+
+## How Storage Works
+
+### In-Memory Storage
+- Initial data is loaded from `data/users.json` on first request
+- All changes (POST, PUT, DELETE) are stored in memory
+- Data persists during the serverless function's lifetime (warm starts)
+- Changes reset automatically when the function restarts (cold starts)
+- Use `GET /api/reset` to manually reload initial data
+
+### Why In-Memory?
+1. **No Database Needed** - Perfect for learning without setup complexity
+2. **Vercel Compatible** - Serverless functions have read-only filesystems
+3. **Auto Cleanup** - Data resets automatically, no manual cleanup needed
+4. **Fast Performance** - All operations happen in RAM
 
 ## Installation
 

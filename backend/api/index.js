@@ -13,24 +13,39 @@ app.use(express.json());
 // Path to JSON file
 const DATA_FILE = path.join(__dirname, '..', 'data', 'users.json');
 
-// Helper function to read users from JSON file
+// In-memory storage (Vercel serverless functions have read-only filesystem)
+let usersCache = null;
+
+// Helper function to read users (loads from file once, then uses cache)
 const readUsers = () => {
   try {
-    const data = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(data);
+    // Load from file only if cache is empty (first time or after reset)
+    if (usersCache === null) {
+      const data = fs.readFileSync(DATA_FILE, 'utf8');
+      usersCache = JSON.parse(data);
+      console.log('Users loaded from file into memory');
+    }
+    return usersCache;
   } catch (error) {
     console.error('Error reading users:', error);
-    return [];
+    // If file read fails, initialize with default data
+    usersCache = [
+      { id: 1, name: 'John Doe', email: 'john@example.com', age: 30, createdAt: new Date().toISOString() },
+      { id: 2, name: 'Jane Smith', email: 'jane@example.com', age: 25, createdAt: new Date().toISOString() }
+    ];
+    return usersCache;
   }
 };
 
-// Helper function to write users to JSON file
+// Helper function to write users (updates in-memory cache only)
 const writeUsers = (users) => {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(users, null, 2), 'utf8');
+    // Store in memory cache (no file write on Vercel)
+    usersCache = users;
+    console.log('Users updated in memory cache');
     return true;
   } catch (error) {
-    console.error('Error writing users:', error);
+    console.error('Error updating users cache:', error);
     return false;
   }
 };
@@ -48,13 +63,16 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to API Learning 101! 🚀',
     version: '1.0.0',
+    storage: 'In-memory (data persists during serverless function lifetime)',
+    note: 'Changes are temporary and reset periodically. Use GET /api/reset to reload initial data.',
     endpoints: {
       users: {
         'GET /api/users': 'Get all users',
         'GET /api/users/:id': 'Get user by ID',
         'POST /api/users': 'Create new user',
         'PUT /api/users/:id': 'Update user (full)',
-        'DELETE /api/users/:id': 'Delete user'
+        'DELETE /api/users/:id': 'Delete user',
+        'GET /api/reset': 'Reset data to initial state'
       }
     },
     documentation: 'https://github.com/nisalgunawardhana/api-learning-101',
@@ -338,6 +356,28 @@ app.delete('/api/users/:id', (req, res) => {
   }
 });
 
+// GET /api/reset - Reset data to initial state (for testing)
+app.get('/api/reset', (req, res) => {
+  try {
+    // Reset cache to null, forcing reload from file on next read
+    usersCache = null;
+    const users = readUsers();
+    
+    res.status(200).json({
+      success: true,
+      message: 'Data reset to initial state',
+      count: users.length,
+      data: users
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error',
+      message: 'Failed to reset data'
+    });
+  }
+});
+
 // 404 handler for undefined routes
 app.use((req, res) => {
   res.status(404).json({
@@ -350,7 +390,8 @@ app.use((req, res) => {
       'GET /api/users/:id',
       'POST /api/users',
       'PUT /api/users/:id',
-      'DELETE /api/users/:id'
+      'DELETE /api/users/:id',
+      'GET /api/reset'
     ]
   });
 });

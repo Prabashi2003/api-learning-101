@@ -82,6 +82,14 @@ The API will be available at `http://localhost:3000`
 | POST | `/api/users` | Create new user |
 | PUT | `/api/users/:id` | Update user |
 | DELETE | `/api/users/:id` | Delete user |
+| GET | `/api/reset` | Reset data to initial state |
+
+**💡 Note about Data Persistence:**
+- The API uses **in-memory storage** (no database required!)
+- Data persists during the serverless function's lifetime
+- Changes are temporary and reset periodically on Vercel
+- Use `GET /api/reset` to manually reload initial data
+- Perfect for learning and testing without worrying about data cleanup!
 
 ## 📖 Learning Path
 
