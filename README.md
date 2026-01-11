@@ -2,6 +2,8 @@
 
 Welcome to API Learning 101! This repository is your comprehensive guide to understanding and working with APIs, complete with a fully functional REST API backend and hands-on learning resources.
 
+![API Learning 101 Banner](images/banner.png)
+
 ## 🌐 Live Demo
 
 **Backend API**: [api-learning.nisalgunawarchana.com](https://api-learning.nisalgunawarchana.com)
